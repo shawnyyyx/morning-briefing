@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1040">
+<title>晨间看板</title>
+<link rel="manifest" href="/daily-briefing/manifest.json">
+<style>
+  :root {
+    --bg-deep: #1a1040;
+    --bg-mid: #3d1f54;
+    --bg-warm: #7a3b4a;
+    --bg-sunrise: #c4623c;
+    --bg-golden: #e8a850;
+    --bg-cream: #f5e6d0;
+    --card-bg: rgba(255, 255, 255, 0.08);
+    --card-border: rgba(255, 255, 255, 0.12);
+    --text-primary: #f5e6d0;
+    --text-secondary: rgba(245, 230, 208, 0.7);
+    --text-muted: rgba(245, 230, 208, 0.45);
+    --accent: #e8a850;
+    --accent-warm: #c4623c;
+    --tag-trusted: #4ade80;
+    --tag-question: #fbbf24;
+    --tag-doubt: #f87171;
+    --tag-manipulated: #a78bfa;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --font-display: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    font-family: var(--font-display);
+    background: linear-gradient(180deg,
+      var(--bg-deep) 0%,
+      var(--bg-mid) 18%,
+      var(--bg-warm) 38%,
+      var(--bg-sunrise) 56%,
+      var(--bg-golden) 72%,
+      var(--bg-cream) 100%
+    );
+    background-attachment: fixed;
+    min-height: 100vh;
+    min-height: 100dvh;
+    color: var(--text-primary);
+    line-height: 1.6;
+    padding: 20px 16px;
+    padding-bottom: calc(40px + var(--safe-bottom));
+    overflow-x: hidden;
+  }
+
+  /* Sunrise glow overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(ellipse at center, rgba(232, 168, 80, 0.25) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app-container {
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    text-align: center;
+    padding: 30px 0 20px;
+    position: relative;
+  }
+
+  .header-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+  }
+
+  .header-greeting {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, var(--bg-golden), var(--bg-cream));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-weather {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* ===== SECTION ===== */
+  .section {
+    margin-bottom: 24px;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  .section-icon {
+    font-size: 1.2rem;
+  }
+
+  .section-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-left: auto;
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:active {
+    transform: scale(0.985);
+  }
+
+  .card-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+  }
+
+  .tag-trusted {
+    background: rgba(74, 222, 128, 0.15);
+    color: var(--tag-trusted);
+  }
+
+  .tag-question {
+    background: rgba(251, 191, 36, 0.15);
+    color: var(--tag-question);
+  }
+
+  .tag-doubt {
+    background: rgba(248, 113, 113, 0.15);
+    color: var(--tag-doubt);
+  }
+
+  .tag-manipulated {
+    background: rgba(167, 139, 250, 0.15);
+    color: var(--tag-manipulated);
+  }
+
+  .card-headline {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+
+  .card-brief {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+
+  .card-analysis {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    margin-top: 8px;
+  }
+
+  .card-analysis-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .card-analysis-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .card-analysis-key {
+    color: var(--text-muted);
+    flex-shrink: 0;
+    min-width: 52px;
+  }
+
+  .card-analysis-val {
+    color: var(--text-secondary);
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  .card-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-source-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+
+  /* ===== HOT TOPICS ===== */
+  .topic-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .topic-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    cursor: default;
+  }
+
+  .topic-chip.manipulated {
+    border-color: rgba(167, 139, 250, 0.3);
+    background: rgba(167, 139, 250, 0.08);
+  }
+
+  .topic-heat {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+  }
+
+  .topic-chip .manipulated-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--tag-manipulated);
+    flex-shrink: 0;
+  }
+
+  .topic-note {
+    font-size: 0.68rem;
+    color: var(--tag-manipulated);
+    margin-top: 4px;
+  }
+
+  /* ===== A-SHARE ===== */
+  .stock-card .card-headline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stock-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(232, 168, 80, 0.2);
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+  }
+
+  .stock-code {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* ===== TOMBSTONE ===== */
+  .tombstone {
+    text-align: center;
+    padding: 28px 20px;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tombstone::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(232, 168, 80, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .tombstone-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .tombstone-quote {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--bg-cream);
+    line-height: 1.6;
+    margin-bottom: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  .tombstone-sub {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .tombstone-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .tombstone-action {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    text-align: left;
+  }
+
+  .tombstone-action-num {
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .tombstone-divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(232, 168, 80, 0.3);
+    margin: 12px auto;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 30px 0 10px;
+  }
+
+  .footer-dot {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin: 0 6px;
+    opacity: 0.5;
+  }
+
+  /* ===== LOADING ===== */
+  .loading-shimmer {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(90deg,
+      var(--card-bg) 0%,
+      rgba(255,255,255,0.06) 50%,
+      var(--card-bg) 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ===== ANIMATIONS ===== */
+  .fade-in {
+    animation: fadeIn 0.6s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+  .delay-5 { animation-delay: 0.5s; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (min-width: 481px) {
+    body { padding: 30px 24px; }
+    .header-greeting { font-size: 2rem; }
+    .card { padding: 20px; }
+  }
+
+  /* ===== REFRESH INDICATOR ===== */
+  .pull-indicator {
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    padding: 8px 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  /* ===== PASSWORD GATE ===== */
+  .password-gate {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    height: 100dvh;
+    background: linear-gradient(180deg,
+      var(--bg-deep) 0%, var(--bg-mid) 30%,
+      var(--bg-warm) 55%, var(--bg-sunrise) 100%
+    );
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+
+  .password-gate.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .gate-icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .gate-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--bg-cream);
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .gate-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+
+  .gate-input-wrap {
+    position: relative;
+    width: 220px;
+  }
+
+  .gate-input {
+    width: 100%;
+    padding: 14px 20px;
+    border: 1px solid var(--card-border);
+    border-radius: 30px;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-family: var(--font-display);
+    text-align: center;
+    letter-spacing: 0.15em;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+
+  .gate-input:focus {
+    border-color: var(--accent);
+  }
+
+  .gate-input::placeholder {
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+
+  .gate-error {
+    font-size: 0.72rem;
+    color: var(--tag-doubt);
+    margin-top: 10px;
+    min-height: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .gate-error.show {
+    opacity: 1;
+  }
+
+  /* shake animation on wrong password */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  .shake {
+    animation: shake 0.4s ease;
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div class="password-gate" id="passwordGate">
+  <div class="gate-icon">🌅</div>
+  <div class="gate-title">晨间看板</div>
+  <div class="gate-subtitle">私人工具 · 请输入密码</div>
+  <div class="gate-input-wrap">
+    <input type="password" class="gate-input" id="gateInput" placeholder="密码" maxlength="20">
+    <div class="gate-error" id="gateError">密码错误</div>
+  </div>
+</div>
+
+<div class="app-container">
+  <!-- HEADER -->
+  <header class="header fade-in">
+    <div class="header-date" id="headerDate">2026年7月29日 · 周三</div>
+    <div class="header-greeting">早上好，小弟</div>
+    <div class="header-weather">深圳 · 晴 · 29°C</div>
+  </header>
+
+  <!-- 今日图景 -->
+  <section class="section fade-in delay-1">
+    <div class="section-title">
+      <span class="section-icon">🔍</span>今日图景
+      <span class="section-count">叙事解剖</span>
+    </div>
+
+    <!-- News 1 -->
+    <div class="card" onclick="this.classList.toggle('expanded')">
+      <span class="card-tag tag-question">● 待深究</span>
+      <div class="card-headline">美伊冲突再起：签完备忘录不到一周又开打，丑国真正的算盘是什么？</div>
+      <div class="card-brief">特朗普与伊朗签署备忘录后不到一周，双方再次交火。三个"宣称目标"——清除伊朗现政权高层、促成政权更迭、重创伊导弹部队——一个都没达成。既然打不赢，为什么还要打？</div>
+      <div class="card-analysis">
+        <div class="card-analysis-label">叙事解剖</div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">谁在操盘</span>
+          <span class="card-analysis-val">美国能源利益集团。中东乱局持续 = 全球原油供给不稳定 = 油价中枢上移。美国的路径依赖：二战时靠军火，现在靠原油。</span>
+        </div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">话语权归属</span>
+          <span class="card-analysis-val">美方叙事："反恐"、"去核"。实际操作：持续搅局，迫使全球原油买家向美方稳定供给靠拢。</span>
+        </div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">受益方</span>
+          <span class="card-analysis-val">美页岩油、加拿大、委内瑞拉（美控）。俄罗斯炼油设施遭乌无人机持续打击，产能受限；巴西安哥拉产能不足以填补缺口。原油成了锁链。</span>
+        </div>
+      </div>
+      <div class="card-meta">
+        <span class="card-source"><span class="card-source-dot"></span>综合外媒</span>
+        <span>·</span>
+        <span>战略框架推演</span>
+      </div>
+    </div>
+
+    <!-- News 2 -->
+    <div class="card">
+      <span class="card-tag tag-manipulated">◆ 话语权竞技</span>
+      <div class="card-headline">美联储新主席上任：嘴上说控通胀，背后在下一盘什么棋？</div>
+      <div class="card-brief">新主席上任后的一系列操作——表面是抗通胀，实际联动着美债利率、美元指数和黄金价格的三角博弈。</div>
+      <div class="card-analysis">
+        <div class="card-analysis-label">叙事解剖</div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">谁在操盘</span>
+          <span class="card-analysis-val">美联储 + 财政部协同。一箭三雕：压低美债收益率、维持美元霸权、同时不引爆通胀预期。</span>
+        </div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">关键指标</span>
+          <span class="card-analysis-val">金价1月创高后半年持续下行，何时反转？取决于美联储"控通胀"的真实诚意。嘴上在控，身体未必诚实。</span>
+        </div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">中道视角</span>
+          <span class="card-analysis-val">不极端看多也不极端看空。黄金短期受压但长期逻辑未破——全球去美元化是慢变量，不会因一次政策转向而终结。</span>
+        </div>
+      </div>
+      <div class="card-meta">
+        <span class="card-source"><span class="card-source-dot"></span>美联储公告</span>
+        <span>·</span>
+        <span>战略框架推演</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 热搜透视 -->
+  <section class="section fade-in delay-2">
+    <div class="section-title">
+      <span class="section-icon">🔥</span>热搜透视
+      <span class="section-count">3条可疑</span>
+    </div>
+
+    <div class="topic-list">
+      <div class="topic-chip">
+        <span>#美伊冲突升级</span>
+        <span class="topic-heat">892万</span>
+      </div>
+      <div class="topic-chip manipulated">
+        <span class="manipulated-dot"></span>
+        <span>#某明星离婚内幕</span>
+        <span class="topic-heat">673万</span>
+      </div>
+      <div class="topic-chip">
+        <span>#台风路径更新</span>
+        <span class="topic-heat">541万</span>
+      </div>
+      <div class="topic-chip manipulated">
+        <span class="manipulated-dot"></span>
+        <span>#某品牌新品发布</span>
+        <span class="topic-heat">428万</span>
+      </div>
+      <div class="topic-chip">
+        <span>#A股跌破关键点位</span>
+        <span class="topic-heat">396万</span>
+      </div>
+      <div class="topic-chip manipulated">
+        <span class="manipulated-dot"></span>
+        <span>#某综艺名场面</span>
+        <span class="topic-heat">312万</span>
+      </div>
+    </div>
+    <div class="topic-note" style="margin-top: 8px; font-size: 0.72rem; color: var(--text-muted);">
+      ◆ 紫色标记 = 疑似人为操纵热搜。<br>判别标准：话题突升陡降、无事件支撑、短期内集中出现。
+    </div>
+  </section>
+
+  <!-- A股棋局 -->
+  <section class="section fade-in delay-3">
+    <div class="section-title">
+      <span class="section-icon">📊</span>A股棋局
+      <span class="section-count">今日关注</span>
+    </div>
+
+    <div class="card stock-card">
+      <div class="card-headline">
+        <span class="stock-badge">定增</span>
+        <span>宁德时代：50亿定增扩产固态电池</span>
+      </div>
+      <span class="stock-code">300750.SZ</span>
+      <div class="card-brief" style="margin-top: 6px;">7月28日公告拟非公开发行募集50亿元，用于固态电池产线建设。定增价较当前股价折价约15%。</div>
+      <div class="card-analysis">
+        <div class="card-analysis-label">棋局解读</div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">真实意图</span>
+          <span class="card-analysis-val">固态电池是下一代技术路线，此轮定增不是救急是抢跑。折价15%说明机构愿意锁仓——护城河加固的信号。</span>
+        </div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">话语权分析</span>
+          <span class="card-analysis-val">公告措辞"巩固全球龙头地位"——注意:是巩固不是追赶。定价权尚在手中。</span>
+        </div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">中道提醒</span>
+          <span class="card-analysis-val">固态电池量产至少2-3年，短期股价波动是市场情绪而非基本面变化。切勿住相于短线涨跌。</span>
+        </div>
+      </div>
+      <div class="card-meta">
+        <span class="card-source"><span class="card-source-dot"></span>巨潮资讯网</span>
+        <span>·</span>
+        <span>7月28日公告</span>
+      </div>
+    </div>
+
+    <div class="card stock-card">
+      <div class="card-headline">
+        <span class="stock-badge">并购</span>
+        <span>某央企新能源资产整合：背后是产业链话语权重构</span>
+      </div>
+      <div class="card-brief" style="margin-top: 6px;">五大发电集团之一宣布整合旗下风电、光伏资产注入上市平台，涉及金额超200亿元。</div>
+      <div class="card-analysis">
+        <div class="card-analysis-label">棋局解读</div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">本质</span>
+          <span class="card-analysis-val">不是简单的资产注入。央企新能源资产分散在各子公司，整合上市 = 集中力量办大事 = 与美国新能源补贴竞争话语权。</span>
+        </div>
+        <div class="card-analysis-row">
+          <span class="card-analysis-key">观察点</span>
+          <span class="card-analysis-val">整合后能否实现真正的协同效应还是只为报表好看？关键看注入后的ROE而非市值规模。</span>
+        </div>
+      </div>
+      <div class="card-meta">
+        <span class="card-source"><span class="card-source-dot"></span>财联社</span>
+        <span>·</span>
+        <span>今日</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 深圳在地 -->
+  <section class="section fade-in delay-4">
+    <div class="section-title">
+      <span class="section-icon">🏙️</span>深圳在地
+    </div>
+
+    <div class="card">
+      <div class="card-headline">前海扩区两周年数据出炉：注册企业突破12万家</div>
+      <div class="card-brief">前海管理局发布最新数据，累计注册企业12.3万家，港资企业占比超20%。金融开放试点持续推进，跨境理财通额度扩容。</div>
+      <div class="card-meta">
+        <span class="card-source"><span class="card-source-dot"></span>深圳特区报</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-headline">深圳湾超级总部基地：又一栋300米+地标封顶</div>
+      <div class="card-brief">深圳湾超总第7栋超高层建筑封顶。注意：写字楼空置率仍在高位，地标封顶 ≠ 产业落地。关键看实际入驻率和企业质量。</div>
+      <div class="card-meta">
+        <span class="card-source"><span class="card-source-dot"></span>深圳发布</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 每日光影 · 墓志铭 -->
+  <section class="section fade-in delay-5">
+    <div class="section-title">
+      <span class="section-icon">🪦</span>每日定锚
+    </div>
+
+    <div class="tombstone">
+      <div class="tombstone-label">墓 志 铭</div>
+      <div class="tombstone-quote">万事万物皆是相，切勿着相。</div>
+      <div class="tombstone-sub">
+        新闻是相。热搜是相。涨跌是相。<br>
+        一切被推到眼前的"重要信息"，<br>
+        不过是有人替你定义了"重要"二字。
+      </div>
+      <div class="tombstone-divider"></div>
+      <div class="tombstone-actions">
+        <div class="tombstone-action">
+          <span class="tombstone-action-num">一</span>
+          <span>兼听则明，偏信则暗。今日面对任何信息，先问：谁说的？他要什么？代价谁来付？</span>
+        </div>
+        <div class="tombstone-action">
+          <span class="tombstone-action-num">二</span>
+          <span>心如明镜。情绪如风，吹起波澜，但大海始终是平静的。灰尘是灰尘，镜子是镜子。</span>
+        </div>
+        <div class="tombstone-action">
+          <span class="tombstone-action-num">三</span>
+          <span>抓本质。一堆金手镯、金戒指，本质是金子，不是价值。别被表象带走判断。</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    晨间看板 · 私人工具<br>
+    2026年7月29日<span class="footer-dot"></span>深圳<span class="footer-dot"></span>数据每日刷新
+  </footer>
+</div>
+
+<script>
+  // ===== PASSWORD GATE =====
+  (function() {
+    // SHA-256 hash of the password. Change this hash to change the password.
+    // Current password: morning2026
+    // To change: compute new hash with: echo -n "yourpassword" | shasum -a 256
+    const PASSWORD_HASH = '6ca44c9237c0558afc73aa043616e8bcbfc60ab8f9ac8b84eaa1773f12b710dc';
+
+    // Check if already authenticated this session
+    if (sessionStorage.getItem('morning_auth') === 'ok') {
+      document.getElementById('passwordGate').classList.add('hidden');
+      return;
+    }
+
+    const gate = document.getElementById('passwordGate');
+    const input = document.getElementById('gateInput');
+    const error = document.getElementById('gateError');
+
+    async function checkPassword(pwd) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(pwd);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      return hashHex === PASSWORD_HASH;
+    }
+
+    input.addEventListener('keydown', async function(e) {
+      if (e.key === 'Enter') {
+        const pwd = input.value.trim();
+        if (!pwd) return;
+
+        const valid = await checkPassword(pwd);
+        if (valid) {
+          sessionStorage.setItem('morning_auth', 'ok');
+          gate.classList.add('hidden');
+        } else {
+          error.classList.add('show');
+          input.classList.add('shake');
+          input.value = '';
+          setTimeout(() => {
+            error.classList.remove('show');
+            input.classList.remove('shake');
+          }, 1500);
+        }
+      }
+    });
+
+    // Auto-focus input
+    setTimeout(() => input.focus(), 500);
+  })();
+
+  // ===== MAIN APP =====
+  // Format date
+  (function() {
+    const now = new Date();
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const y = now.getFullYear();
+    const m = now.getMonth() + 1;
+    const d = now.getDate();
+    const w = weekdays[now.getDay()];
+    document.getElementById('headerDate').textContent = `${y}年${m}月${d}日 · ${w}`;
+
+    // Update hour-based greeting
+    const hour = now.getHours();
+    const greeting = document.querySelector('.header-greeting');
+    if (hour < 9) greeting.textContent = '早上好，小弟';
+    else if (hour < 12) greeting.textContent = '上午好，小弟';
+    else if (hour < 18) greeting.textContent = '下午好，小弟';
+    else greeting.textContent = '晚上好，小弟';
+  })();
+
+  // Card expand on mobile
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', function(e) {
+      const analysis = this.querySelector('.card-analysis');
+      if (analysis) {
+        const wasHidden = analysis.style.display === 'none';
+        analysis.style.display = wasHidden ? 'block' : 'none';
+        if (wasHidden) {
+          analysis.style.animation = 'fadeIn 0.3s ease forwards';
+        }
+      }
+    });
+  });
+
+  // Pull to refresh
+  let touchStartY = 0;
+  const indicator = document.createElement('div');
+  indicator.className = 'pull-indicator';
+  indicator.textContent = '↓ 下拉刷新';
+  document.querySelector('.app-container').prepend(indicator);
+
+  document.addEventListener('touchstart', e => {
+    touchStartY = e.touches[0].clientY;
+  });
+
+  document.addEventListener('touchmove', e => {
+    if (window.scrollY === 0) {
+      const delta = e.touches[0].clientY - touchStartY;
+      if (delta > 60) {
+        indicator.style.opacity = '1';
+        indicator.textContent = '释放刷新';
+      }
+    }
+  });
+
+  document.addEventListener('touchend', () => {
+    if (indicator.style.opacity === '1') {
+      indicator.textContent = '正在刷新...';
+      setTimeout(() => {
+        location.reload();
+      }, 500);
+    }
+    indicator.style.opacity = '0';
+  });
+
+  // Register service worker for PWA
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/daily-briefing/sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>
