@@ -221,8 +221,16 @@
     ind.style.opacity = '0';
   });
 
+  // Force-clear old service workers
   if('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/daily-briefing/sw.js').catch(()=>{});
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    }).then(() => {
+      if(!sessionStorage.getItem('sw_done')) {
+        sessionStorage.setItem('sw_done','1');
+        location.reload();
+      }
+    });
   }
 })();
 </script>
