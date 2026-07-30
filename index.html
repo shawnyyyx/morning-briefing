@@ -127,15 +127,26 @@
   const h = now.getHours();
   document.querySelector('.header-greeting').textContent = h<9?'早上好，小弟':h<12?'上午好，小弟':h<18?'下午好，小弟':'晚上好，小弟';
 
-  // Load data
+  // Load data - try direct XHR first, fallback to inline
   let data;
   try {
-    const r = await fetch('data.json?'+Date.now());
-    if(!r.ok) throw 0;
-    data = await r.json();
+    const r = await new Promise((ok, fail) => {
+      const x = new XMLHttpRequest();
+      x.open('GET', 'data.json?t='+Date.now());
+      x.onload = () => { try { ok(JSON.parse(x.responseText)); } catch(e) { fail(e); } };
+      x.onerror = fail;
+      x.send();
+    });
+    data = r;
   } catch(e) {
-    // Fallback: show loading message
-    document.getElementById('contentSections').innerHTML = '<div class="tombstone" style="margin-top:40px"><div class="tombstone-quote">加载中...</div><div class="tombstone-sub">如果持续显示此信息，请下拉刷新</div></div>';
+    // Fallback: try fetch as last resort
+    try {
+      const r = await fetch('data.json', {cache: 'no-store'});
+      if(r.ok) data = await r.json();
+    } catch(e2) {}
+  }
+  if(!data) {
+    document.getElementById('contentSections').innerHTML = '<div class="tombstone" style="margin-top:40px"><div class="tombstone-quote">加载失败</div><div class="tombstone-sub">请检查网络后刷新页面<br>如果已开VPN，请关闭后重试</div></div>';
     return;
   }
 
