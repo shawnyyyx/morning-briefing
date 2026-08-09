@@ -106,8 +106,8 @@
   @media (min-width: 481px) { body { padding: 30px 24px; } .header-greeting { font-size: 2rem; } .card { padding: 20px; } }
   .pull-indicator { text-align: center; font-size: 0.72rem; color: var(--text-muted); padding: 8px 0; opacity: 0; transition: opacity 0.3s ease; }
   /* 五洲热搜 - 微博热搜榜样式 */
-  .hot-continent { font-size: 0.8rem; font-weight: 700; color: var(--accent); margin: 14px 0 6px 4px; letter-spacing: 0.08em; display: flex; align-items: center; gap: 6px; }
-  .hot-continent::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); opacity: 0.7; }
+  .hot-continent { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; color: var(--accent); margin: 16px 0 8px 2px; letter-spacing: 0.08em; padding: 4px 10px; border-radius: 20px; background: rgba(232, 168, 80, 0.08); border: 1px solid rgba(232, 168, 80, 0.18); }
+  .hot-continent-count { font-size: 0.65rem; font-weight: 400; color: var(--text-muted); letter-spacing: 0; }
   .hot-list { background: var(--card-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--card-border); border-radius: var(--radius); overflow: hidden; margin-bottom: 4px; }
   .hot-item { display: flex; align-items: flex-start; padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); cursor: pointer; transition: background 0.2s ease; }
   .hot-item:last-child { border-bottom: none; }
@@ -117,6 +117,8 @@
   .hot-rank.normal { color: var(--text-muted); }
   .hot-main { flex: 1; min-width: 0; }
   .hot-title { font-size: 0.86rem; font-weight: 500; line-height: 1.45; }
+  .hot-sub { font-size: 0.74rem; color: var(--text-muted); margin-top: 3px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .hot-item.open .hot-sub { display: none; }
   .hot-detail { display: none; margin-top: 8px; font-size: 0.78rem; color: var(--text-secondary); line-height: 1.6; }
   .hot-note { color: var(--accent); margin-top: 6px; font-size: 0.76rem; line-height: 1.55; }
   .hot-meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 8px; margin-top: 2px; }
@@ -125,6 +127,11 @@
   .lv-hot { background: rgba(251, 146, 60, 0.18); color: #fb923c; }
   .lv-new { background: rgba(96, 165, 250, 0.18); color: #60a5fa; }
   .hot-heat { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; }
+  /* 可折叠板块 */
+  .foldable { cursor: pointer; user-select: none; -webkit-user-select: none; }
+  .fold-arrow { transition: transform 0.25s ease; font-size: 0.72rem; color: var(--text-muted); margin-left: 4px; }
+  .foldable.collapsed .fold-arrow { transform: rotate(-90deg); }
+  .hot-hint { font-size: 0.7rem; color: var(--text-muted); text-align: center; margin: 10px 0 2px; opacity: 0.8; }
 </style>
 </head>
 <body>
@@ -148,7 +155,7 @@
   document.querySelector('.header-greeting').textContent = h<9?'早上好，小弟':h<12?'上午好，小弟':h<18?'下午好，小弟':'晚上好，小弟';
 
   // Inline data - no fetch needed
-  const data = {"date": "2026-08-09", "greeting": "早上好，小弟", "weather": "深圳 · 晴天酷热 · 28~36°C（中北部38°C+，高温黄色预警，台风白海豚外围下沉）", "图景": [{"tag": "中局博弈", "tagType": "trusted", "headline": "【8月8-9日】万斯定性美伊冲突「博弈中段」、伊朗开出重开海峡六项条件、美军弹药告急参联会主席私下「找出口」", "brief": "8月8日，美国副总统万斯接受福克斯采访时将美伊冲突定性为「博弈中段」——「显然已不在开局阶段」。万斯称伊朗已向美方表示无计划对海峡征收通行费，美方最关注「尽可能多运出石油和天然气」。同日，伊朗最高国安委秘书佐尔加德尔开出重开海峡六项条件：永不威胁伊朗、结束一切侵略、解除海上封锁并撤军、赔偿战争损失、解除全部制裁、无条件解冻伊朗资产。伊外长阿拉格齐称与阿曼的临时航道谈判「非常接近达成协议」，但强调「这不意味海峡将重开」。美军参联会主席凯恩被曝私下寻求为伊朗战事「寻找出口」，认为仅靠空袭无法实现全部作战目标。《纽约时报》披露美军「爱国者」导弹库存已不足1700枚，战斧巡航导弹消耗近半。阿联酋ADNOC称过去一周3艘船只遭袭，累计15艘被击中。", "analysis": {"谁在操盘": "昨天的叙事是「协议接近达成、方向在缓和」，今天就被泼了冷水。操盘的不是一个人，是两套机器在同时运转：伊朗外交系统（阿拉格齐+阿曼谈判）在推进技术层面的临时航道，革命卫队+国安委（佐尔加德尔）在开政治条件——前者是交易，后者是底线。美方同样分裂：万斯在媒体上定位「中局」，暗示还有牌可打；凯恩在内部说「要找出口」，弹药数据在说「快撑不住了」。这不是一个棋手在下棋，是两个棋手各怀心事，各走各的棋。", "话语权归属": "万斯那句「伊朗告诉我们不会收通行费」——这是在给市场和盟友喂定心丸，潜台词是「局势在控制中，油价不会崩」。但伊朗同一天开出六项条件，第一条就是「永不威胁伊朗」——这等于要求美国承认伊朗的地区大国地位。两边的叙事完全不在一个频道上。更值得关注的是阿联酋ADNOC的15艘船被袭——这些袭击的叙事权在谁手里？伊朗否认、阿联酋谴责、美国沉默。海峡还没开放，周边已经在流血。", "受益方": "短期看，海峡不通最直接受益的是油价多头——但万斯放话「维持冲突前供应水平」+美军扫雷+临时航道，多头的逻辑在松动。真正受益的是阿曼：作为唯一被双方信任的中间人，它的外交资产在升值。对中国来说，如果海峡僵局持续，能源安全压力会推动新能源和煤化工加速替代——这是长线逻辑，不是短线交易。军工复合体也在受益：美军弹药告急=新订单在路上，雷神和洛克希德·马丁的股价已经反映了。", "中道视角": "昨天说「别追消息押注」，今天伊朗就用六项条件证明了这个判断。中道的态度不是赌协议签不签，而是看清楚：美伊双方都没有结束冲突的真实意愿——伊朗需要外部敌人维持国内团结，美国需要中东危机维持军工订单和油价控制。所以博弈不会结束，只会换形式。临时航道是「停火不终战」的技术安排，不是和平。"}, "source": "央视新闻 · 新华社 · 澎湃新闻 · 华尔街见闻 · 8月8-9日"}, {"tag": "自然之力", "tagType": "question", "headline": "【8月9日】台风「白海豚」今夜登陆浙闽：14级强台风+特大暴雨250-440mm，浙江苍南到象山一线正面迎击，深圳外围「烤」出36°C+", "brief": "中央气象台8月9日6时继续发布台风橙色预警：第13号台风「白海豚」（强台风级）今晨5时位于温州偏东约305公里海面，中心最大风力14级（45m/s），七级风圈半径350-450公里，将以15-20km/h向西北移动，预计今夜至明晨在浙江舟山到福建福鼎一带登陆（13-14级）。浙江气象台更精确预报登陆范围为「苍南到象山一带」。降雨方面：浙江东部沿海部分地区特大暴雨（250-440毫米）。国家防总启动江苏、安徽四级响应，维持浙江、福建三级响应。登陆后可能回旋少动，给湖北、安徽、江西、河南带来持续强降水。深圳方面：受外围下沉气流影响，8-10日最高36°C+，中北部38°C+，高温黄色预警持续，10日后随台风北上逐渐转为雷阵雨。深圳往华东方向列车8月9日大面积停运。", "analysis": {"谁在操盘": "自然不操盘——但防灾体系在操盘。从中央气象台的橙色预警，到浙江的台风紧急警报，到深圳铁路大面积停运，到国家防总多省应急响应——这套机器的响应速度比任何博弈都快。这是中国防灾体系最成熟的一面：不跟你谈叙事，只跟你谈人命。", "话语权归属": "「白海豚」是气象学史上第一个从日界线（东经180°）生成并登陆我国的台风——7200公里的长途奔袭。气象预警的话语权没有被污染，因为台风不挑意识形态。但注意一个细节：浙江气象台把登陆范围从中央气象台的「舟山到福鼎」缩小到「苍南到象山」——省级预报比中央更精确，这是技术能力的体现，不是话语权之争。", "受益方": "防灾做得好的地方受益——这个逻辑没变。深圳方面，10日后台风北上将带来降雨降温，终结这轮高温。华东沿海如果应对得当，减少的伤亡和损失就是最大受益。台风登陆后的回旋少动意味着内陆省份（湖北、安徽、河南）也要做好防暴雨准备——这些地方可能还没进入状态。", "中道视角": "敬畏自然，做好准备。深圳人周末继续避暑，别去海边。华东方向出行全部暂停。台风是自然周期的一部分，来了就应对。等它走了，高温也就结束了——这就是自然的中道：有来有去，不执著于一时。"}, "source": "中央气象台 · 浙江天气 · 深圳天气 · 深圳铁路 · 8月9日"}, {"tag": "逆势溢价", "tagType": "trusted", "headline": "【8月7-9日】江波龙溢价45%完成37亿定增：全球存储走弱之际，21家机构+老股东高价锁仓，560元/股较收盘价高出173元", "brief": "8月7日晚，国产存储模组龙头江波龙披露定增报告书：向易方达、财通、诺德等21名对象发行660.71万股，发行价560元/股，较8月7日收盘价386.60元溢价45%，募资37亿元。认购方包括多名公司发起人股东和前高管（王伟民、杨晓斌、黄海华、张旭等），以及阳光电源子公司和星宸科技。所有股份锁定期6个月。募资投向AI高端存储器量产、自主存储主控芯片研发、高端封测基地建设。公司上半年预计净利92-110亿元，同比增长622-744倍。同期全球存储板块走弱：美光被下调目标价，SK海力士、三星同步回撤。", "analysis": {"谁在操盘": "这不是江波龙在操盘——这是长线产业资本和专业机构在「用钱投票」。386.6元的市场价随便买，他们偏要用560元认购并锁定6个月。最值得关注的是那些发起人股东和前高管：这群最了解公司真实经营数据的人，放弃二级市场低价筹码，重金参与高价定增。这不是投资，这是信仰。或者说，他们知道一些市场不知道的东西。", "话语权归属": "全球存储板块的「周期见顶」叙事正在主导二级市场情绪——美光跌、三星跌、SK海力士跌。但江波龙的溢价定增给出了完全相反的信号：AI数据中心扩容带来的存储刚需，不是短期周期波动能抹掉的。两种叙事在打架：海外投行的「周期见顶」vs 国内产业资本的「国产替代长牛」。谁对谁错，2027年1月解禁时见分晓。", "受益方": "江波龙用37亿补AI存储产能短板，受益的是整个国产AI算力产业链——存储是AI基础设施中最容易被忽视但最不可替代的一环。阳光电源和星宸科技各掏1亿参与认购，说明产业链上下游在用资本绑定生态关系。但要注意风险：6个月锁定期后37亿筹码集中解禁，如果届时行情偏弱，抛压不小。短期账面浮亏是客观存在的——定增价560元，现价386元，差了45%。", "中道视角": "溢价45%定增是一个强烈的信号，但信号不等于结论。全球存储周期是否真的见顶、AI需求能否持续支撑价格、江波龙的产能扩张能否顺利落地——这三个问题都要等到2027年才能回答。中道的态度：看到信号的强度（产业资本在逆势加仓），也看到信号的风险（短期浮亏+解禁抛压+周期不确定性）。别因为一条溢价定增就全仓存储——也别因为海外存储股在跌就清仓国产替代。两个逻辑并行，各有各的周期。"}, "source": "证券时报 · 21世纪经济报道 · 中国基金报 · 8月7-9日"}], "热搜": [{"text": "#白海豚台风登陆浙江#", "heat": "2365万", "manipulated": false}, {"text": "#刘亦菲下沉市场路人缘#", "heat": "1852万", "manipulated": true}, {"text": "#贾冰喝嗨了说脏话被偷拍#", "heat": "1521万", "manipulated": false}, {"text": "#秋天第一杯奶茶骑手被打#", "heat": "1287万", "manipulated": false}, {"text": "#王哲林晒潮流照引争议#", "heat": "1056万", "manipulated": true}, {"text": "#上海男篮兴奋剂风波#", "heat": "934万", "manipulated": false}, {"text": "#余华翻出史铁生35年前的信#", "heat": "867万", "manipulated": false}, {"text": "#蔡皋获国际安徒生奖#", "heat": "712万", "manipulated": false}], "A股": [{"badge": "定增", "headline": "江波龙溢价45%完成37亿定增：560元/股较收盘价高出173元，21家机构+老股东逆势锁仓6个月", "code": "301308.SZ", "brief": "国产存储龙头江波龙8月7日披露定增报告书：向易方达、财通、诺德等21名对象发行660.71万股，发行价560元/股（较收盘价386.60元溢价45%），募资37亿元。多名发起人股东和前高管（王伟民、杨晓斌、黄海华、张旭）参与认购，阳光电源子公司和星宸科技各投1亿。募资投向AI高端存储器量产、自主主控芯片研发、高端封测基地。上半年预计净利92-110亿元，同比增长622-744倍。", "analysis": {"真实意图": "全球存储板块集体走弱（美光被下调目标价、三星SK海力士回撤），市场充斥着「周期见顶」的悲观叙事。这时候溢价45%定增，不是在抄底——是在赌AI算力带来的存储需求不是周期性的，是结构性的。21家机构和老股东愿意锁仓6个月承受账面浮亏，说明他们认为386元的市场价是错的，560元才是对的。这个判断对不对，2027年解禁时揭晓。", "话语权分析": "海外投行说「存储周期见顶」，国内产业资本说「溢价45%加仓」。两套叙事在同一个赛道上激烈对冲。谁更懂中国存储产业的真实订单和产能扩张进度？显然是那些在公司内部待了十几年的老股东。但市场情绪不认这个——它只认K线。560元是产业资本的「价值底线」，能不能守住，看AI需求能不能持续兑现。", "中道提醒": "别因为溢价定增就追涨，也别因为全球存储走弱就清仓。两个逻辑并行：短期看全球周期是否见顶（海外库存、价格走势），长期看AI存储需求是否刚需（国内数据中心扩容、大模型训练）。最危险的不是选错边，是只看到一边。"}, "source": "江波龙公告 · 证券时报 · 21世纪经济报道 · 8月7-9日"}, {"badge": "回购", "headline": "四川双马拟5000万-1亿回购+帝奥微3000-6000万回购+爱玛科技完成3亿回购：8月8日27家公司披露回购进展", "code": "000935.SZ / 688381.SH", "brief": "Wind数据显示，8月8日27家公司发布股票回购进展。其中四川双马拟5000万-1亿回购（不超36元/股），帝奥微拟3000-6000万回购（用于股权激励），奔朗新材拟不超2000万回购。已完成的回购中，爱玛科技以3亿元居首，仙琚制药1.5亿、新朋股份1.2亿。阳光电源已回购4999万元。今年以来A股回购金额上限合计超2000亿元，已实施回购超900亿元。", "analysis": {"真实意图": "8月以来的回购潮不是孤例——今年A股回购金额上限已超2000亿。这不是市场见底的信号（因为很多回购是注销式的，不护盘），而是上市公司在用实际行动说：我的股票被低估了。注销式回购直接缩减总股本、增厚每股收益，比分红更高效。", "话语权分析": "回购是上市公司唯一的「自证清白」工具——业绩可以修饰，但回购必须掏真金白银。今年超过900亿的已实施回购金额，是A股历史上最集中的一次「上市公司集体自证」。这不是国家队在托市，是公司自己在用利润买自己的股票。", "中道提醒": "回购是好事，但要看回购用途。用于注销减资的（如美的、顺丰、茅台）是真正的价值回归；用于股权激励的（如帝奥微）是内部利益分配。前者利好所有股东，后者只利好管理层和员工。看回购公告时，先看用途再看金额。"}, "source": "Wind · 环球网 · 证券日报 · 8月8-9日"}], "深圳": [{"headline": "APEC倒计时100天媒体采风：盐田港上半年吞吐量834万标箱、前海出海e站通服务企业超1900家、离境退税销售增130%", "brief": "8月8日，「相约深圳 见证奇迹——APEC大会倒计时100天媒体采风活动」走访盐田港、前海出海e站通、小梅沙、深业上城。盐田港上半年集装箱吞吐量突破834.59万标箱，对APEC经济体进出口增长33%，2026年新开11条联通APEC国际航线。前海出海e站通线上注册用户5.4万家，服务企业超1900家，推动境外投资项目224个。上半年深圳离境退税商品销售额同比增长130%，「深圳智造」成退税主力。小梅沙外籍游客接待量同比增超三倍。", "source": "南方日报 · 深圳新闻网 · 8月9日"}, {"headline": "滨海大道西行主道及辅道全线恢复通行：沙河立交段沉降抢修完成，8月9日上午8时全面通车", "brief": "深圳交警8月9日上午8时发布路况播报：滨海大道西行主道（所有车道）及辅道全线恢复通行。此前因沙河立交段路面沉降，该路段经历了多日抢修，8月6日先行恢复左侧2条主车道。交警提醒途经沿线路口注意行车安全，避免临时穿插变线。", "source": "深圳晚报 · 深圳交警 · 8月9日"}, {"headline": "台风「白海豚」外围继续烤：深圳8-9日最高36°C+、中北部38°C+，往华东方向列车大面积停运", "brief": "受台风「白海豚」外围偏北下沉气流影响，深圳8-9日高温酷热持续，最高36°C以上，中北部和人口密集区38°C+，高温黄色预警持续。10日后随台风北上逐渐转为雷阵雨，高温缓解。深圳北至上海、杭州、南京、南通等华东方向多趟列车8月9日停运，已购票旅客可30日内全额退票。", "source": "深圳天气 · 深圳铁路 · 8月9日"}], "定锚": {"quote": "万斯说美伊冲突进入「博弈中段」——昨天说快签协议，今天开出六项条件。台风「白海豚」今夜登陆，14级风+440mm雨，深圳人还在外围蒸烤。江波龙溢价45%定增37亿，全球存储都在跌，这群人偏要用贵一截的价钱锁仓半年。", "sub": "三件事串在一起看：美伊博弈的「中段」意味着双方都没想结束——伊朗需要敌人维持团结，美国需要危机维持军工订单。自然之力不管这些，台风该来来，防灾该做做。江波龙的溢价定增在提醒我们：市场情绪和产业逻辑经常是反的——当所有人都在说「周期见顶」，最了解公司的人在用真金白银说「你错了」。中道的智慧不是预测谁对谁错，是两边都看见，两边都不全信。", "actions": ["美伊博弈进入中段、伊朗开六项条件：昨天说「别追消息押注」——今天条件开出来了，证明博弈远未结束，临时航道不等于和平", "台风白海豚今夜登陆浙闽、深圳继续36°C+：周末别去海边、华东出行全部暂停；10日后高温缓解", "江波龙溢价45%定增：产业资本在逆势加仓存储赛道——信号值得关注，但别因一条消息就重仓，等周期逻辑和产业逻辑统一了再说"]}};
+  const data = {"date": "2026-08-09", "greeting": "早上好，小弟", "weather": "深圳 · 炎热 · 28~36°C（台风白海豚今夜登陆浙闽，深圳受外围下沉气流影响，高温持续）", "五洲": [{"洲": "亚洲", "emoji": "🌏", "items": [{"rank": 1, "title": "韩国捐水被嫌「只配冲厕所」，日韩网民吵翻", "level": "沸", "heat": "61万播放", "brief": "熊本7.1级地震后，大韩航空空运1.2万瓶济州纯净水救灾。一名日本网友却发帖称「韩国的水唯一用途是冲马桶」，获1.3万赞；韩国舆论炸锅，也有大量日本网友反怼「替同胞丢人」。", "note": "灾害面前水不分国籍，但嘴分。日本反韩情绪在匿名网络不降反升——2016年仇恨言论法只压住了街头，没压住键盘。"}, {"rank": 2, "title": "日本民众新宿集会：反对扩军谋「核」，守护无核三原则", "level": "热", "heat": "央视报道", "brief": "长崎核爆81周年（8月9日），东京新宿车站前民众集会，抗议高市政权扩军和推动修改「无核三原则」。集会者称「我们的税金正被用于战争准备」。", "note": "政府在向右转，民众在向左拉。日本社会的撕裂线，正从外交议题滑向身份认同。"}, {"rank": 3, "title": "日议员称「日本是韩国老大哥」，韩教授反击「韩国是日本祖先」", "level": "新", "heat": "15.3万讨论", "brief": "日本前众议院副议长卫藤征士郎称殖民过韩国的日本是「老大哥」；韩国教授反击：文化从朝鲜半岛传入日本，日韩关系应倒过来看。", "note": "这梗在三国互联网都是爆款——历史账永远算不完，但双方都在拿民族主义做内政文章，这才是重点。"}]}, {"洲": "欧洲", "emoji": "🌍", "items": [{"rank": 1, "title": "以色列空袭黎巴嫩254死，法意西齐声谴责：停火协议悬了", "level": "沸", "heat": "环球网", "brief": "美伊停火后，以色列8日大规模空袭黎巴嫩，至少254死、1165伤。梅洛尼、西班牙外长、法国外长同日发声谴责，称以方「无视停火、违反国际法」。", "note": "欧洲骂归骂，手上没有牌。美国说停火，以色列照打——欧洲的愤怒恰好证明它在中东没有话语权。"}, {"rank": 2, "title": "莱茵河150年最低水位：欧洲大旱，超2万人超额死亡", "level": "热", "heat": "参考消息", "brief": "欧洲热浪已致超2万人超额死亡；莱茵河水位降至近150年最低，船舶载货量仅剩25%；多瑙河干出1944年纳粹沉船；德国天然气库存仅47%。", "note": "大旱先杀农业，再杀航运，最后杀能源——德国三季度GDP可能直接掉0.2%。气候危机正在变成经济危机。"}, {"rank": 3, "title": "休达移民危机：7.2万人越境、141死，欧盟各国内讧", "level": "新", "heat": "央视新闻", "brief": "西班牙飞地休达一周涌入7.2万移民，至少75人溺亡；意大利恢复对西班牙边境检查，西班牙对意也实施边检，欧盟内部分歧公开化。", "note": "难民潮是欧洲的血压计：极右翼每涨一分，边境就紧一寸。危机没有被解决，只被政党消费。"}]}, {"洲": "非洲", "emoji": "🌍", "items": [{"rank": 1, "title": "尼日利亚单日解救308名被绑架者：史上最大规模营救", "level": "沸", "heat": "法新社", "brief": "尼日利亚军警联合行动，从尼日尔州森林救出308名被绑架公民——163人来自夸拉州、145人来自尼日尔州。该地区2月刚发生过200人死亡的袭击。", "note": "在尼日利亚，「绑架」是一门产业。单日救出308人值得欢呼，但人们更想问：下一个受害者是谁？"}, {"rank": 2, "title": "塞内加尔3名TikTok网红因批评总统被判入狱", "level": "热", "heat": "Nation Africa", "brief": "塞内加尔法院以「侮辱总统」判处3名TikTok网红监禁。该国年轻人占人口多数，TikTok是最大的公共舆论场。", "note": "非洲年轻一代的政治参与从街头搬进了短视频。判网红入狱，等于跟整代人的表达方式宣战。"}, {"rank": 3, "title": "刚果（金）埃博拉：超300名儿童死亡，实际规模或为官方4倍", "level": "新", "heat": "联合国", "brief": "刚果（金）埃博拉疫情已致超300名儿童死亡，约3900例确诊、1750死。世卫警告实际规模可能比官方数据大2-4倍，医护因欠薪罢工。", "note": "疫情为什么压不住？欠薪的护士、被攻击的救援队、缺位的国际援助——公共卫生危机的底层永远是治理危机。"}]}, {"洲": "美洲", "emoji": "🌎", "items": [{"rank": 1, "title": "美国预备役警察跨国抢抚养权：枪杀3人、携幼子闯边境被抓", "level": "沸", "heat": "全网热议", "brief": "德州35岁预备役警官查德·埃伯尔赴墨西哥争3岁儿子抚养权被拒，开枪杀3人、重伤孩子生母，携子驾车逃往美墨边境，在关口被墨西哥警方擒获。", "note": "一个「执法人员」用最不执法的方式解决家事。美国人吵的是枪，墨西哥人看的是：你凭什么来我的国家杀人。"}, {"rank": 2, "title": "Meta被判9.42亿美元天价罚款：社交媒体=「公共危害」", "level": "热", "heat": "央视新闻", "brief": "新墨西哥州法院认定Meta的社交媒体产品构成「公共危害」，判罚5.67亿美元，加上此前的3.75亿共9.42亿；要求限制青少年使用时长。全美40多个州已跟进诉讼。", "note": "美国人正在用判例重新定义社交媒体：算法投喂=公共危害。这案子如果立住，整个行业都要变天。"}, {"rank": 3, "title": "巴西硬刚美国：互撤大使签证+25%关税，大选前哨战", "level": "新", "heat": "观察者网", "brief": "美方官员欲入境会见博索纳罗之子被巴西拒绝，美方反手撤销巴西驻美大使签证、对巴西部分商品加征25%关税；巴西搬出《维也纳公约》回应。", "note": "签证是表象，十月大选才是内核。美国在拉美后院「干预选举」的剧本，巴西人看得比谁都清楚。"}]}, {"洲": "大洋洲", "emoji": "🌏", "items": [{"rank": 1, "title": "南太岛国16:2否决澳新反华声明，新西兰外长当场破防", "level": "沸", "heat": "观察者网", "brief": "太平洋岛国论坛外长会上，瑙鲁、基里巴斯用「共识决」否决了澳新推动的批评中国导弹试射联合声明。新西兰外长彼得斯失态指责两国「按外部伙伴意愿行事」。", "note": "16票赞成、2票否决——两个小国用规则否决了两个大国。南太「后花园」的叙事，正在被岛国自己改写。"}, {"rank": 2, "title": "全球最大铁矿石港20年罕见大罢工：BHP 150人停工48小时", "level": "热", "heat": "路透社", "brief": "澳大利亚黑德兰港BHP港口工人罢工48小时，涉及日出口8000万美元的铁矿石。双方围绕新协议谈判超7个月，BHP提出16%加薪仍被拒。", "note": "全球铁矿石贸易的咽喉，掐在150个港口工人手里。16%加薪都不够——通胀之下，钱不值钱。"}]}], "风向": [{"tag": "停火裂痕", "tagType": "question", "headline": "【8月9日】以色列空袭黎巴嫩254死：美伊刚停火，以军就开打——这停火协议到底谁说了算？", "brief": "当地时间8月8日，以色列对黎巴嫩发动大规模空袭，黎民防部门报告至少254人死亡、1165人受伤。黎巴嫩总理宣布全国哀悼日。意大利总理梅洛尼、西班牙外长、法国外长同日谴责，指其无视美伊停火协议、违反国际法。此前美伊刚达成临时停火，伊朗与阿曼就霍尔木兹海峡协议「已非常接近达成」。", "analysis": {"谁在操盘": "美伊停火是美伊的事，以色列不在协议里——这是关键。内塔尼亚胡用空袭告诉所有人：中东停不停火，不是华盛顿说了算，是特拉维夫说了算。伊朗和阿曼谈海峡协议谈得热火朝天，以色列在黎巴嫩投下几百枚炸弹，两个剧本同时在演。", "话语权归属": "欧洲三国的谴责很响，但话语权恰恰不在他们手里：他们谴责的对象（以色列）根本不听，他们想保护的协议（美伊停火）不是他们签的。欧洲的愤怒是真实的，欧洲的无能为力也是真实的——谴责声明再长，也拦不住下一轮轰炸。", "受益方": "空袭的直接受益方是以色列国内政治：转移舆论、巩固右翼基本盘。受害方是黎巴嫩平民和整个停火框架——每一次「协议达成」，都在被下一次「军事行动」抽耳光。", "中道视角": "把「停火」当成终局，是这轮中东最大的认知错误。停火只是局间休息，不是比赛结束。中道的态度：看协议签署，更要看协议之外谁在继续开枪——那才是真实的权力结构。"}, "source": "环球网 · 央视 · 8月9日"}, {"tag": "气候经济学", "tagType": "question", "headline": "【8月9日】莱茵河150年最低水位+2万人超额死亡：欧洲大旱正在从天气事件变成经济事件", "brief": "入夏以来欧洲高温相关超额死亡突破2万人（德国近1.2万）；莱茵河水位降至近150年最低，船舶载货量仅25%-20%；多瑙河水位历史低位，干出1944年纳粹沉船；罗马尼亚首次关闭依赖多瑙河冷却的核反应堆；德国天然气库存仅47%，为有记录以来同期最低。基尔世界经济研究所估计低水位或使德国三季度GDP下降0.2%。", "analysis": {"谁在操盘": "没有人操盘——气候不玩叙事，它只算账。真正在「操盘」的是极端天气本身：热浪先杀农业（法国农民改种耐旱作物），再杀航运（莱茵河载货量只剩25%），最后杀能源（核电降功率、气库47%）。一条链下来，GDP数字自己会掉。", "话语权归属": "欧洲的环保叙事（2030减排、禁俄气）正在被现实打脸：一边宣誓2027年前禁俄气，一边暗购俄罗斯天然气；一边谈绿色转型，一边核反应堆因缺水停机。话语权争夺不过自然规律——气候不跟你辩论，它直接断电。", "受益方": "没有受益方，只有损失分摊者：德国制造业、依赖河运的工业区、农民、消费者（气价电价）。非要说受益，可能是投机资金——欧洲能源价格波动本身就是交易标的。", "中道视角": "气候议题最忌讳两个极端：一边是「气候末日论」的焦虑营销，一边是「气候无关论」的鸵鸟心态。中道的态度：欧洲大旱是一面镜子——它照出所有「宏大叙事」在具体缺水断电面前有多脆弱。适应气候，比争论气候更实在。"}, "source": "参考消息 · 央视 · 8月8-9日"}], "热搜": [{"text": "#芯片股暴跌#", "heat": "第一财经", "manipulated": false}, {"text": "#韩教授反击称韩国是日本祖先#", "heat": "15.3万", "manipulated": true}, {"text": "#美国允许普京入境是比较大的让步#", "heat": "北京日报", "manipulated": false}, {"text": "#佩洛西回应特朗普豪宅遭查#", "heat": "澎湃新闻", "manipulated": false}, {"text": "#洞洞鞋突然卖不动了#", "heat": "新浪新闻", "manipulated": true}, {"text": "#侵华日军荣字1644部队细菌战证据公布#", "heat": "人民日报", "manipulated": false}, {"text": "#男子出国陷入香艳女郎陷阱成间谍#", "heat": "央视新闻", "manipulated": false}, {"text": "#无袖流行是对身体羞耻的反击#", "heat": "中国新闻周刊", "manipulated": true}], "A股": [{"badge": "周末", "headline": "芯片股周五暴跌上热搜：国产算力高位震荡，回调还是上车？", "code": "大盘观察", "brief": "8月8日「芯片股暴跌」登上微博热搜。此前寒武纪半年报营收净利双翻倍（59.96亿/23.11亿）、市值一度破万亿，7月进出口数据集成电路出口2160亿美元同比+99.5%。高位剧烈波动，市场分歧加大。", "analysis": {"真实意图": "「芯片股暴跌」能上热搜，本身就说明A股情绪在过热——过去几个月半导体是绝对主线，任何风吹草动都会被放大。寒武纪三天前还在谈万亿市值，周五就暴跌，这是典型的情绪钟摆：涨的时候看三年，跌的时候看三天。", "话语权分析": "注意节奏：出口数据（+99.5%）是基本盘，热搜暴跌是情绪面。基本盘没变，情绪面天天变。谁在热搜里带节奏不重要，重要的是别让热搜替你做投资决策。", "中道提醒": "半导体是未来十年的主线，不等于明天就涨。高位放量暴跌通常是筹码交换：有人下车，有人上车。中道的做法：不追高、不恐慌，等波动收敛再看。周末了，让子弹飞一会儿。"}, "source": "第一财经 · 8月8日"}], "深圳": [{"headline": "台风「白海豚」今夜登陆浙闽，深圳高温闷热持续：最高36°C+，中北部38°C", "brief": "台风白海豚预计9日晚至10日晨在浙江舟山到福建福鼎一带登陆，深圳受其外围下沉气流影响，高温黄色预警持续，晴天间多云，间中有局地短时雷阵雨。午后尽量避免外出。", "source": "深圳天气 · 8月9日"}, {"headline": "APEC深圳倒计时100天：11月主场，机场暑运首月客流超580万人次", "brief": "APEC第三十三次领导人非正式会议11月将在深圳举办，「倒计时100天媒体采风活动」已开启。7月深圳机场保障旅客超580万人次，单日最高进出港双双「10万+」。", "source": "深圳新闻网 · 8月7-9日"}, {"headline": "全民健身日：全市83家场馆免费/优惠开放，深圳800万健身人口", "brief": "第18个全民健身日系列活动启动，66项赛事覆盖足篮乒羽网象，83家体育场馆免费或优惠开放。深圳已建成4.9万个体育场地，「十分钟健身圈」持续完善。", "source": "深圳特区报 · 8月8-9日"}], "定锚": {"quote": "日本灾民嫌弃韩国送的水「只配冲厕所」，南太两个小国一票否决了两个大国的声明——世界从来不按我们以为的剧本演。", "sub": "今天看世界，发现一个规律：所有「理所当然」都会被现实打脸。韩国好心送水，被一句「冲马桶」噎回来；澳新想带节奏，被两个岛国用规则按死；欧洲骂以色列，以色列照打不误。你以为的大国操控，小国用规则就挡了；你以为的人道援助，一张嘴就变政治。所以别急着站队，别急着下结论——先看，再想，最后才说。", "actions": ["台风白海豚今夜登陆浙闽：深圳高温持续，午后少出门；华东方向关注灾情", "芯片股暴跌上热搜：半导体高位震荡，情绪钟摆在摆——别让热搜替你决策", "看世界新闻先问三句：谁在说话？为谁说话？他说话能得到什么？"]}};
 
   document.querySelector('.header-weather').textContent = data.weather||'深圳';
   document.getElementById('pageFooter').innerHTML = '晨间看板 · 私人工具<br>'+data.date+'<span class="footer-dot"></span>深圳<span class="footer-dot"></span>数据每日刷新';
@@ -157,21 +164,23 @@
   let html = '';
 
   // 五洲热搜（主菜）
-  html += '<section class="section fade-in '+delays[0]+'"><div class="section-title"><span class="section-icon">🌐</span>五洲热搜<span class="section-count">世界在吵什么</span></div>';
+  html += '<section class="section fade-in '+delays[0]+'"><div class="section-title"><span class="section-icon">🌐</span>五洲热搜<span class="section-count">点开看门道</span></div>';
   for(const cont of (data.五洲||[])) {
-    html += '<div class="hot-continent">'+cont.emoji+' '+cont.洲+'</div><div class="hot-list">';
+    const cnt = (cont.items||[]).length;
+    html += '<div class="hot-continent">'+cont.emoji+' '+cont.洲+'<span class="hot-continent-count">'+cnt+'条</span></div><div class="hot-list">';
     for(const it of (cont.items||[])) {
       const rcls = it.rank<=3?'top':'normal';
       const lvcls = it.level==='沸'?'lv-boil':it.level==='热'?'lv-hot':'lv-new';
-      html += '<div class="hot-item"><span class="hot-rank '+rcls+'">'+it.rank+'</span><div class="hot-main"><div class="hot-title">'+it.title+'</div><div class="hot-detail"><span>'+it.brief+'</span><div class="hot-note">💡 '+it.note+'</div></div></div><div class="hot-meta"><span class="hot-level '+lvcls+'">'+it.level+'</span><span class="hot-heat">'+it.heat+'</span></div></div>';
+      const sub = it.brief.length>46 ? it.brief.slice(0,46)+'…' : it.brief;
+      html += '<div class="hot-item"><span class="hot-rank '+rcls+'">'+it.rank+'</span><div class="hot-main"><div class="hot-title">'+it.title+'</div><div class="hot-sub">'+sub+'</div><div class="hot-detail"><span>'+it.brief+'</span><div class="hot-note">💡 '+it.note+'</div></div></div><div class="hot-meta"><span class="hot-level '+lvcls+'">'+it.level+'</span><span class="hot-heat">'+it.heat+'</span></div></div>';
     }
     html += '</div>';
   }
-  html += '</section>';
+  html += '<div class="hot-hint">点击任意一条展开「当地人在想什么」</div></section>';
 
   // 今日风向
-  html += '<section class="section fade-in '+delays[1]+'"><div class="section-title"><span class="section-icon">🔍</span>今日风向<span class="section-count">叙事解剖</span></div>';
-  for(const item of (data.图景||[])) {
+  html += '<section class="section fade-in '+delays[1]+'"><div class="section-title foldable"><span class="section-icon">🔍</span>今日风向<span class="section-count">叙事解剖</span><span class="fold-arrow">▼</span></div><div class="fold-body">';
+  for(const item of (data.风向||[])) {
     const tc = item.tagType==='question'?'tag-question':item.tagType==='doubt'?'tag-doubt':item.tagType==='manipulated'?'tag-manipulated':'tag-trusted';
     const pref = item.tagType==='question'?'● ':item.tagType==='manipulated'?'◆ ':'';
     html += '<div class="card"><span class="card-tag '+tc+'">'+pref+item.tag+'</span><div class="card-headline">'+item.headline+'</div><div class="card-brief">'+item.brief+'</div><div class="card-analysis"><div class="card-analysis-label">叙事解剖</div>';
@@ -180,18 +189,18 @@
     }
     html += '</div><div class="card-meta"><span class="card-source"><span class="card-source-dot"></span>'+item.source+'</span></div></div>';
   }
-  html += '</section>';
+  html += '</div></section>';
 
   // 国内热搜（对照镜）
   const fc = (data.热搜||[]).filter(t=>t.manipulated).length;
-  html += '<section class="section fade-in '+delays[2]+'"><div class="section-title"><span class="section-icon">🔥</span>国内热搜<span class="section-count">'+fc+'条可疑</span></div><div class="topic-list">';
+  html += '<section class="section fade-in '+delays[2]+'"><div class="section-title foldable"><span class="section-icon">🔥</span>国内热搜<span class="section-count">'+fc+'条可疑</span><span class="fold-arrow">▼</span></div><div class="fold-body"><div class="topic-list">';
   for(const t of (data.热搜||[])) {
     html += '<div class="topic-chip'+ (t.manipulated?' manipulated':'') +'">'+(t.manipulated?'<span class="manipulated-dot"></span>':'')+'<span>'+t.text+'</span><span class="topic-heat">'+t.heat+'</span></div>';
   }
-  html += '</div><div style="margin-top:8px;font-size:0.72rem;color:var(--text-muted)">◆ 紫色标记 = 疑似人为操纵热搜<br>判别标准：话题突升陡降、无事件支撑、短期内集中出现</div></section>';
+  html += '</div><div style="margin-top:8px;font-size:0.72rem;color:var(--text-muted)">◆ 紫色标记 = 疑似人为操纵热搜<br>判别标准：话题突升陡降、无事件支撑、短期内集中出现</div></div></section>';
 
   // A股棋局
-  html += '<section class="section fade-in '+delays[3]+'"><div class="section-title"><span class="section-icon">📊</span>A股棋局<span class="section-count">今日关注</span></div>';
+  html += '<section class="section fade-in '+delays[3]+'"><div class="section-title foldable"><span class="section-icon">📊</span>A股棋局<span class="section-count">今日关注</span><span class="fold-arrow">▼</span></div><div class="fold-body">';
   for(const item of (data.A股||[])) {
     html += '<div class="card stock-card"><div class="card-headline"><span class="stock-badge">'+item.badge+'</span><span>'+item.headline+'</span></div>'+(item.code?'<span class="stock-code">'+item.code+'</span>':'')+'<div class="card-brief" style="margin-top:6px">'+item.brief+'</div><div class="card-analysis"><div class="card-analysis-label">棋局解读</div>';
     for(const [k,v] of Object.entries(item.analysis||{})) {
@@ -199,14 +208,14 @@
     }
     html += '</div><div class="card-meta"><span class="card-source"><span class="card-source-dot"></span>'+item.source+'</span></div></div>';
   }
-  html += '</section>';
+  html += '</div></section>';
 
   // 深圳在地
-  html += '<section class="section fade-in '+delays[4]+'"><div class="section-title"><span class="section-icon">🏙️</span>深圳在地</div>';
+  html += '<section class="section fade-in '+delays[4]+'"><div class="section-title foldable"><span class="section-icon">🏙️</span>深圳在地<span class="fold-arrow">▼</span></div><div class="fold-body">';
   for(const item of (data.深圳||[])) {
     html += '<div class="card"><div class="card-headline">'+item.headline+'</div><div class="card-brief">'+item.brief+'</div><div class="card-meta"><span class="card-source"><span class="card-source-dot"></span>'+item.source+'</span></div></div>';
   }
-  html += '</section>';
+  html += '</div></section>';
 
   // 每日定锚
   const a = data.定锚||{};
@@ -219,8 +228,15 @@
 
   document.getElementById('contentSections').innerHTML = html;
 
-  // Card click
+  // Click: fold sections / expand cards / expand hot items
   document.addEventListener('click', function(e) {
+    const fold = e.target.closest('.foldable');
+    if(fold) {
+      fold.classList.toggle('collapsed');
+      const body = fold.closest('section').querySelector('.fold-body');
+      if(body) body.style.display = body.style.display==='none'?'block':'none';
+      return;
+    }
     const card = e.target.closest('.card');
     if(card) {
       const an = card.querySelector('.card-analysis');
@@ -230,7 +246,8 @@
     const hot = e.target.closest('.hot-item');
     if(hot) {
       const d = hot.querySelector('.hot-detail');
-      if(d) d.style.display = d.style.display==='none'?'block':'none';
+      if(d) d.style.display = d.style.display==='block'?'none':'block';
+      hot.classList.toggle('open', d && d.style.display==='block');
     }
   });
 
