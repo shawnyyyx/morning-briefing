@@ -39,20 +39,18 @@
 
 ## 更新流程（DSH 每日 09:00 自动 + 手动兜底）
 
-1. 搜索五大洲热点（每洲 1-2 次搜索：各洲热搜/当地新闻聚合，小语种地区用英文源）+ 国内热搜 + A股 + 深圳
-2. 写 data.json（中文引号用「」不用""）
+1. 搜索前一天（D-1）的五洲民生（每洲 1-2 次搜索，小语种地区用英文源）+ 国内热搜 + A股（只选 1 条最硬的）+ 深圳；时效与写法见 `STYLE.md`
+2. 写 data.json（中文引号用「」，不用破折号）
 3. 运行内嵌脚本（见下）
 4. 推送 git
 
-```python
-import json, re
-base = "/Users/yang/WorkBuddy/2026-07-29-19-44-42/daily-briefing"
-with open(f"{base}/data.json") as f: data = json.load(f)
-data_str = json.dumps(data, ensure_ascii=False)
-with open(f"{base}/index.html") as f: html = f.read()
-html = re.sub(r'const data = \{.*?\};', f'const data = {data_str};', html, flags=re.DOTALL)
-with open(f"{base}/index.html", 'w') as f: f.write(html)
+```bash
+cd /Users/yang/WorkBuddy/2026-07-29-19-44-42/daily-briefing
+python3 embed.py          # 内嵌
+python3 embed.py --check  # 校验
 ```
+
+不要用裸 f-string 正则：data 里的 `\n` 会被二次解析，页面直接白屏。
 
 ```bash
 cd /Users/yang/WorkBuddy/2026-07-29-19-44-42/daily-briefing && git add data.json index.html && git commit -m "update: $(date +%Y-%m-%d)" && git push
