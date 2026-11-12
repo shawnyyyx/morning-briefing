@@ -6,6 +6,13 @@
 
 线上地址：https://shawnyyyx.github.io/morning-briefing
 
+## 运行方式（2026-11-12 起）
+
+- 旧 WorkBuddy 自动化 `automation-1785326727662` 保持 PAUSED，**不要恢复**，它会覆盖五洲结构。
+- 现由 DSH 会话内 cron 任务接管：每天 09:00（Asia/Shanghai），schedule id `schedule-1a53d4e3-ff53-49a8-9e37-0af1df5674f0`。
+- 前提：DSH 应用/会话在运行；若 9:00 不在线，下次启动会补跑最近一次。
+- 流程：读 date → 搜五洲民生/热搜/A股/深圳 → 写 data.json → `python3 embed.py` → `--check` → `node --check` → commit/push → 线上 `?nocache` 验证。
+
 ## 数据结构（data.json）
 
 ```json
